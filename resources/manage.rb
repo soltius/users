@@ -35,6 +35,13 @@ action :create do
 
   search(new_resource.data_bag, "groups:#{new_resource.search_group} AND NOT action:remove") do |u|
     u['username'] ||= u['id']
+
+    # if use_usergroup is false,
+    # if gid is not defined, default to group_name if group_id was defined
+    unless new_resource.use_usergroups
+      u['gid'] ||= new_resource.group_name if new_resource.group_id
+    end
+
     u['groups'].each do |g|
       users_groups[g] = [] unless users_groups.key?(g)
       users_groups[g] << u['username']
@@ -64,6 +71,14 @@ action :create do
       end
       only_if { u['gid'] && u['gid'].is_a?(Numeric) }
     end
+
+    if u['primary_group']
+      user u['username'] do # ~FC022
+        gid validate_id(u['primary_group'])
+        action :modify
+      end
+    end
+  end
 
     # Create user object.
     # Do NOT try to manage null home directories.
