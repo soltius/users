@@ -71,13 +71,6 @@ action :create do
       end
       only_if { u['gid'] && u['gid'].is_a?(Numeric) }
     end
-
-    if u['primary_group']
-      user u['username'] do # ~FC022
-        gid validate_id(u['primary_group'])
-        action :modify
-      end
-    end
   end
 
     # Create user object.
@@ -176,6 +169,13 @@ action :create do
       gid new_resource.group_id
     end
     members users_groups[new_resource.group_name]
+  end
+
+  if u['primary_group']
+    user u['username'] do # ~FC022
+      gid validate_id(u['primary_group'])
+      action :modify
+    end
   end
 end
 
