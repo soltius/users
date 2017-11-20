@@ -32,9 +32,13 @@ property :manage_nfs_home_dirs, [true, false], default: true
 action :create do
   users_groups = {}
   users_groups[new_resource.group_name] = []
+  primary_group = {}
 
   search(new_resource.data_bag, "groups:#{new_resource.search_group} AND NOT action:remove") do |u|
     u['username'] ||= u['id']
+    if u['primary_group']
+      primary_group.merge!({u['username'] => u['primary_group']})
+    end
     u['groups'].each do |g|
       users_groups[g] = [] unless users_groups.key?(g)
       users_groups[g] << u['username']
@@ -161,6 +165,13 @@ action :create do
       gid new_resource.group_id
     end
     members users_groups[new_resource.group_name]
+  end
+
+  primary_group.each do |user, group|
+    execute 'change primary group' do
+      command "usermod -g #{group} #{user}"
+      only_if { !!user && !!group}
+    end
   end
 end
 
