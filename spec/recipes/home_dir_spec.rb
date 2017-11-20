@@ -40,6 +40,11 @@ describe 'users_test::default' do
           id: 'user_with_local_home',
           ssh_keys: ["ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAklOUpkDHrfHY17SbrmTIpNLTGK9Tjom/BWDSU\nGPl+nafzlHDTYW7hdI4yZ5ew18JH4JW9jbhUFrviQzM7xlELEVf4h9lFX5QVkbPppSwg0cda3\nPbv7kOdJ/MTyBlWXFCR+HAo3FXRitBqxiX1nKhXpHAZsMciLq8V6RjsNAQwdsdMFvSlVK/7XA\nt3FaoJoAsncM1Q9x5+3V0Ww68/eIFmb1zuUFljQJKprrX88XypNDvjYNby6vw/Pb0rwert/En\nmZ+AW4OZPnTPI89ZPmVMLuayrD2cE86Z/il8b+gw3r3+1nKatmIkjn2so1d01QraTlMqVSsbx\nNrRFi9wrf+M7Q== chefuser@mylaptop.local"],
           groups: ['testgroup'],
+        },
+        user_with_primary_group: {
+          id: 'user_with_different_default_group',
+          groups: ['primary_group','testgroup'],
+          primary_group: 'primary_group'
         })
     end.converge(described_recipe)
   end
@@ -86,6 +91,10 @@ describe 'users_test::default' do
     it 'manages groups' do
       expect(chef_run).to create_users_manage('testgroup')
       expect(chef_run).to create_users_manage('nfsgroup')
+    end
+
+    it 'changes the defaul group if set' do
+      expect(chef_run).to run_execute('change primary group')
     end
   end
 end
